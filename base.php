@@ -34,6 +34,11 @@ class Base extends \Plugin {
 	 */
 	function _load() {
 		$f3 = \Base::instance();
+
+		// Add menu item
+		$this->_addNav("stats", "Stats", "/^\\/stats/i");
+
+		// Add routes
 		$f3->route("GET /stats", "Plugin\Stats\Controller->index");
 		$f3->route("GET /stats/trends", "Plugin\Stats\Controller->trends");
 		$f3->route("GET /stats/users", "Plugin\Stats\Controller->users");
