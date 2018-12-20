@@ -43,11 +43,6 @@ class Base extends \Plugin {
 		$f3->route("GET /stats/trends", "Plugin\Stats\Controller->trends");
 		$f3->route("GET /stats/users", "Plugin\Stats\Controller->users");
 		$f3->route("GET /stats/issues", "Plugin\Stats\Controller->issues");
-
-		// Post stats if last update was more than one week ago
-		if($f3->get("statsplugin.last_sent") < strtotime("-1 week")) {
-			$this->postStats();
-		}
 	}
 
 	/**
@@ -55,36 +50,6 @@ class Base extends \Plugin {
 	 */
 	public function _admin() {
 		echo \Helper\View::instance()->render("stats/admin.html");
-	}
-
-	/**
-	 * Asynchronously post anonymous statistics to meta.phproject.org
-	 */
-	public function postStats() {
-		$f3 = \Base::instance();
-		$db = $f3->get("db.instance");
-
-		// Add unique ID
-		$data = array("key" => $f3->get("statsplugin.key"), "revision" => $f3->get("revision"));
-
-		// Add basic stats
-		$result = $db->exec("SELECT COUNT(id) AS `count` FROM user WHERE role != 'group'");
-		$data["users"] = $result[0]["count"];
-		$result = $db->exec("SELECT COUNT(id) AS `count` FROM user WHERE role = 'group'");
-		$data["groups"] = $result[0]["count"];
-		$result = $db->exec("SELECT COUNT(id) AS `count` FROM issue");
-		$data["issues"] = $result[0]["count"];
-		$result = $db->exec("SELECT COUNT(id) AS `count` FROM issue_update");
-		$data["updates"] = $result[0]["count"];
-		$result = $db->exec("SELECT COUNT(id) AS `count` FROM issue_comment");
-		$data["comments"] = $result[0]["count"];
-		$result = $db->exec("SELECT value as version FROM config WHERE attribute = 'version'");
-		$data["version"] = $result[0]["version"];
-
-		if($this->asyncPost("http://meta.phproject.org/stats/post.php", $data)) {
-			$config = new \Model\Config;
-			$config->setVal("statsplugin.last_sent", time());
-		}
 	}
 
 	/**
