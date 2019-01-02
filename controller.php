@@ -10,6 +10,7 @@ class Controller extends \Controller {
 
 	public function index(\Base $f3) {
 		$f3->set("title", "Stats");
+		$this->loadGroupsUsersProjects($f3);
 		echo \Helper\View::instance()->render("stats/index.html");
 	}
 
